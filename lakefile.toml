@@ -1,0 +1,11 @@
+name = "human-eval-lean"
+version = "0.1.0"
+defaultTargets = ["HumanEvalLean", "create-scaffold"]
+
+[[lean_lib]]
+name = "HumanEvalLean"
+globs = ["HumanEvalLean.*"]
+
+[[lean_exe]]
+name = "create-scaffold"
+root = "CreateScaffold"
