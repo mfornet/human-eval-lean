@@ -1,5 +1,29 @@
-def below_zero : Unit :=
-  ()
+def belowZero (l : List Int) : Bool :=
+  go 0 l
+where
+  go (cur : Int) (remaining : List Int) : Bool :=
+    if cur < 0 then
+      true
+    else
+      match remaining with
+      | [] => false
+      | l::rem => go (cur + l) rem
+
+theorem belowZero_iff {l : List Int} : belowZero l ↔ ∃ n, (l.take n).sum < 0 := by
+  suffices ∀ c, belowZero.go c l ↔ ∃ n, c + (l.take n).sum < 0 by simpa using this 0
+  intro c
+  induction l generalizing c with
+  | nil => simp [belowZero.go]
+  | cons h t ih =>
+    simp only [belowZero.go, Bool.if_true_left, Bool.or_eq_true, decide_eq_true_eq, ih]
+    refine ⟨?_, ?_⟩
+    · rintro (hc|⟨n, hn⟩)
+      · exact ⟨0, by simpa⟩
+      · exact ⟨n + 1, by simpa [← Int.add_assoc]⟩
+    · rintro ⟨n, hn⟩
+      rcases n with (_|n)
+      · exact Or.inl (by simpa using hn)
+      · exact Or.inr ⟨n, by simpa [Int.add_assoc] using hn⟩
 
 /-!
 ## Prompt
