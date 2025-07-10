@@ -5,7 +5,7 @@ def IsSubseq (s₁ : String) (s₂ : String) : Prop :=
 
 def vowels : List Char := ['a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U']
 
-def no_vowels (s : String) : Prop :=
+def NoVowels (s : String) : Prop :=
   List.all s.toList (· ∉ vowels)
 
 def MaximalFor [LE α] (P : ι → Prop) (f : ι → α) (x : ι) : Prop :=
@@ -13,7 +13,7 @@ def MaximalFor [LE α] (P : ι → Prop) (f : ι → α) (x : ι) : Prop :=
   P x ∧ ∀ y : ι, P y → f x ≤ f y → f y ≤ f x
 
 def RemoveVowelsIff (solution : String → String) : Prop :=
-    (s x : String) → (solution s = x) → MaximalFor (fun i => no_vowels i ∧ IsSubseq i s) (String.length) x
+    (s x : String) → (solution s = x) → MaximalFor (fun i => NoVowels i ∧ IsSubseq i s) (String.length) x
 
 def removeVowels (s : String) : String :=
     String.mk (s.toList.filter (· ∉ vowels))
@@ -33,14 +33,14 @@ theorem IsSubseq.removeVowels {s t : String} (hst : IsSubseq s t) :
   hst.filter _
 
 theorem removeVowels_eq_self {s : String} :
-    removeVowels s = s ↔ no_vowels s := by
-  simp [String.ext_iff, no_vowels, removeVowels]
+    removeVowels s = s ↔ NoVowels s := by
+  simp [String.ext_iff, NoVowels, removeVowels]
 
 theorem removeVowels_correct : RemoveVowelsIff removeVowels := by
   simp [RemoveVowelsIff]
   intro s
   constructor
-  · simp [no_vowels, removeVowels, IsSubseq]
+  · simp [NoVowels, removeVowels, IsSubseq]
   · simp only [and_imp]
     intro y hnv hss hle
     rw [← removeVowels_eq_self.2 hnv]
