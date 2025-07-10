@@ -1,48 +1,50 @@
 import Std.Data.Iterators.Combinators.FilterMap
 
-def is_subseq (s₁ : String) (s₂ : String) : Prop :=
-    List.Sublist s₁.toList s₂.toList
+def IsSubseq (s₁ : String) (s₂ : String) : Prop :=
+  List.Sublist s₁.toList s₂.toList
 
 def vowels : List Char := ['a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U']
 
 def no_vowels (s : String) : Prop :=
-    List.all s.toList (· ∉ vowels)
+  List.all s.toList (· ∉ vowels)
 
-def maximal_for [LE α] (P : ι → Prop) (f : ι → α) (x : ι) : Prop :=
-    -- Same as MaximalFor in Mathlib
-    P x ∧ ∀ y : ι, P y → f x ≤ f y → f y ≤ f x
+def MaximalFor [LE α] (P : ι → Prop) (f : ι → α) (x : ι) : Prop :=
+  -- Same as MaximalFor in Mathlib
+  P x ∧ ∀ y : ι, P y → f x ≤ f y → f y ≤ f x
 
-def remove_vowels_iff (solution : String → String) : Prop :=
-    (s x : String) → (solution s = x) → maximal_for (fun i => no_vowels i ∧ is_subseq i s) (String.length) x
+def RemoveVowelsIff (solution : String → String) : Prop :=
+    (s x : String) → (solution s = x) → MaximalFor (fun i => no_vowels i ∧ IsSubseq i s) (String.length) x
 
-def remove_vowels (s : String) : String :=
+def removeVowels (s : String) : String :=
     String.mk (s.toList.filter (· ∉ vowels))
 
-example : remove_vowels "abcdef" = "bcdf" := by native_decide
-example : remove_vowels "abcdef\nghijklm" = "bcdf\nghjklm" := by native_decide
-example : remove_vowels "aaaaa" = "" := by native_decide
-example : remove_vowels "aaBAA" = "B" := by native_decide
-example : remove_vowels "zbcd" = "zbcd" := by native_decide
+example : removeVowels "abcdef" = "bcdf" := by native_decide
+example : removeVowels "abcdef\nghijklm" = "bcdf\nghjklm" := by native_decide
+example : removeVowels "aaaaa" = "" := by native_decide
+example : removeVowels "aaBAA" = "B" := by native_decide
+example : removeVowels "zbcd" = "zbcd" := by native_decide
 
-theorem remove_vowels_correct : remove_vowels_iff remove_vowels := by
-    simp [remove_vowels_iff]
-    intro s
-    constructor
-    · simp [no_vowels, remove_vowels, is_subseq]
-    · simp
-      intro y hnv hss hle
-      apply List.Sublist.length_le
-      let hsub := List.Sublist.filter (· ∉ vowels) hss
-      simp at hsub
-      simp [remove_vowels]
-      suffices y.data = List.filter (fun x => !decide (x ∈ vowels)) y.data by
-        rwa [this]
-      symm
-      rw [List.filter_eq_self]
-      intro a ha
-      simp [no_vowels] at hnv
-      simp
-      exact hnv a ha
+theorem IsSubseq.length_le {s t : String} (hst : IsSubseq s t) :
+    s.length ≤ t.length :=
+  List.Sublist.length_le hst
+
+theorem IsSubseq.removeVowels {s t : String} (hst : IsSubseq s t) :
+    IsSubseq (removeVowels s) (removeVowels t) :=
+  hst.filter _
+
+theorem removeVowels_eq_self {s : String} :
+    removeVowels s = s ↔ no_vowels s := by
+  simp [String.ext_iff, no_vowels, removeVowels]
+
+theorem removeVowels_correct : RemoveVowelsIff removeVowels := by
+  simp [RemoveVowelsIff]
+  intro s
+  constructor
+  · simp [no_vowels, removeVowels, IsSubseq]
+  · simp only [and_imp]
+    intro y hnv hss hle
+    rw [← removeVowels_eq_self.2 hnv]
+    exact IsSubseq.length_le (IsSubseq.removeVowels hss)
 
 /-!
 ## Prompt
